@@ -1,14 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Ptiw.DataAccess.Tables;
+﻿using Ptiw.DataAccess.Tables;
 using Ptiw.HostApp.Tasks.CheckNpcpnSchedule.Responses;
 using Quartz;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
 {
@@ -21,13 +15,15 @@ namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
         private readonly Uri _baseUri;
         private List<FindAppointmentTaskData> _finalResult;
         private readonly CultureInfo culture = new CultureInfo("ru-RU");
+        private readonly IConfiguration _configuration;
 
-        public FindAppointmentScheduleTask(ILogger<FindAppointmentScheduleTask> logger, ServiceContext serviceContext, HttpClient httpClient)
+        public FindAppointmentScheduleTask(ILogger<FindAppointmentScheduleTask> logger, ServiceContext serviceContext, HttpClient httpClient, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
             _serviceContext = serviceContext;
             _httpClient = httpClient;
-            _baseUri = new(this.GetTaskData("URL"));
+            _baseUri = new(this.GetTaskData(_configuration, "URL"));
             _finalResult = new List<FindAppointmentTaskData>();
         }
 

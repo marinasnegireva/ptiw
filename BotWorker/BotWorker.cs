@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Ptiw.Settings;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -15,17 +9,17 @@ namespace Ptiw.HostApp
     {
         private readonly ILogger<BotWorker> _logger;
         private readonly TelegramBotClient _telegramBotClient;
+        private readonly IConfiguration _configuration;
 
-        public BotWorker(ILogger<BotWorker> logger, TelegramBotClient telegramBotClient)
+        public BotWorker(ILogger<BotWorker> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _telegramBotClient = telegramBotClient;
-            //quartz.SchedulerName = "esf";
+            _configuration = configuration;
+            _telegramBotClient = new TelegramBotClient(_configuration["TelegramToken"]);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var settings = SettingsManager.AppSettings;
             var cts = new CancellationTokenSource();
             var cancellationToken = cts.Token;
             var receiverOptions = new ReceiverOptions
@@ -49,7 +43,7 @@ namespace Ptiw.HostApp
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (!SettingsManager.AllowedUserIds.Contains(update.Message.From.Id))
+            if (!update.Message.From.Id.IsAllowedUser(_configuration))
             {
                 return;
             }

@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-
-namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule.Responses
+﻿namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule.Responses
 {
     internal class AppointableSeance
     {

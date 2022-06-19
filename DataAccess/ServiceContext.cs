@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Ptiw.DataAccess.Tables;
 using System.Linq;
 
@@ -6,21 +7,17 @@ namespace Ptiw.DataAccess
 {
     public class ServiceContext : DbContext
     {
-        public ServiceContext(DbContextOptions<ServiceContext> options) : base(options)
+        private readonly IConfiguration _configuration;
+
+        public ServiceContext(DbContextOptions<ServiceContext> options, IConfiguration configuration) : base(options)
         {
+            _configuration = configuration;
         }
 
-        /*  private readonly string connectionString;
-          public ServiceContext(string connectionString)
-          {
-              this.connectionString = connectionString;
-          }
-
-          protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-          {
-              optionsBuilder.UseNpgsql(connectionString);
-          }
-        */
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseNpgsql(_configuration["ServiceContext"]);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

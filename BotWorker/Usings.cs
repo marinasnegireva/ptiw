@@ -1,3 +1,12 @@
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging;
+global using Newtonsoft.Json;
 global using Ptiw.DataAccess;
 global using Ptiw.HostApp.Tasks.CheckNpcpnSchedule;
 global using Ptiw.HostApp.Tasks.NpcpnNotifier;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
