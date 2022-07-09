@@ -1,47 +1,45 @@
-﻿using Quartz;
-using System.Text;
+﻿using System.Text;
 using Telegram.Bot;
 
 namespace Ptiw.HostApp.Tasks.NpcpnNotifier
 {
     [DisallowConcurrentExecution]
-    internal class NpcpnNotifierTask : IJob
+    internal class NpcpnNotifierTask : AbstractTask
     {
-        private readonly ILogger<NpcpnNotifierTask> _logger;
         private readonly ServiceContext _serviceContext;
         private readonly TelegramBotClient _telegramBotClient;
-        private readonly IConfiguration _configuration;
 
         public NpcpnNotifierTask(ILogger<NpcpnNotifierTask> logger, ServiceContext serviceContext, IConfiguration configuration)
         {
-            _logger = logger;
+            Logger = logger;
+            Configuration = configuration;
             _serviceContext = serviceContext;
-            _configuration = configuration;
-            _telegramBotClient = new TelegramBotClient(_configuration["TelegramToken"]);
+            _telegramBotClient = new TelegramBotClient(Configuration["TelegramToken"]);
         }
 
-        public async Task Execute(IJobExecutionContext context)
+        public override async Task Execute(IJobExecutionContext context)
         {
             try
             {
+                if (!IsEnabled(context)) return;
                 var needToNoticeAbout = _serviceContext.FindAppointmentTaskLog.Where(t => !t.Notified).ToList();
                 if (!needToNoticeAbout.IsNullOrEmpty())
                 {
                     var notices = needToNoticeAbout.Select(n => n.MapToNotificationData()).ToList();
                     // await _telegramBotClient.SendTextMessageAsync(SettingsManager.AppSettings.Wife_ID, CreateMessage(notices));
-                    await _telegramBotClient.SendTextMessageAsync(_configuration["Husband_ID"], CreateMessage(notices));
+                    await _telegramBotClient.SendTextMessageAsync(Configuration["Husband_ID"], CreateMessage(notices));
                     _serviceContext.FindAppointmentTaskLog.Where(l => needToNoticeAbout.Select(n => n.Id).ToList().Contains(l.Id)).ToList().ForEach(l => l.Notified = true);
                     await _serviceContext.SaveChangesAsync();
-                    _logger.LogInformation($"Отправил {notices.Count} посещений");
+                    Logger.LogInformation($"Отправил {notices.Count} посещений");
                 }
                 else
                 {
-                    _logger.LogInformation("Нет обновлений");
+                    Logger.LogInformation("Нет обновлений");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.ToString());
+                Logger.LogCritical(ex.ToString());
             }
         }
 

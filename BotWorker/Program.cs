@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using NLog.Extensions.Hosting;
-using Quartz;
 using System.IO;
 
 var builder = Host.CreateDefaultBuilder(args);

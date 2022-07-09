@@ -22,7 +22,7 @@ namespace Ptiw.Tests
             var logger = new Mock<ILogger<FindAppointmentScheduleTask>>();
             var context = new Mock<ServiceContext>(config);
             var httpclient = new Mock<HttpClient>();
-            
+
             var task = new FindAppointmentScheduleTask(logger.Object, context.Object, httpclient.Object, config);
             task.Execute(new Mock<IJobExecutionContext>().Object).Wait();
         }

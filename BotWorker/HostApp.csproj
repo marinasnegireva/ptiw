@@ -29,7 +29,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="NLog" Version="4.7.13" />
-    <PackageReference Include="NLog.Config" Version="4.7.13" />
     <PackageReference Include="NLog.Extensions.Hosting" Version="1.7.4" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
     <PackageReference Include="Quartz" Version="3.3.3" />

@@ -5,6 +5,7 @@ global using Newtonsoft.Json;
 global using Ptiw.DataAccess;
 global using Ptiw.HostApp.Tasks.CheckNpcpnSchedule;
 global using Ptiw.HostApp.Tasks.NpcpnNotifier;
+global using Quartz;
 global using System;
 global using System.Collections.Generic;
 global using System.Linq;

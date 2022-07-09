@@ -1,37 +1,35 @@
 ﻿using Ptiw.DataAccess.Tables;
 using Ptiw.HostApp.Tasks.CheckNpcpnSchedule.Responses;
-using Quartz;
 using System.Globalization;
 using System.Net.Http;
 
 namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
 {
     [DisallowConcurrentExecution]
-    public class FindAppointmentScheduleTask : IJob
+    public class FindAppointmentScheduleTask : AbstractTask
     {
-        private readonly ILogger<FindAppointmentScheduleTask> _logger;
         private readonly ServiceContext _serviceContext;
         private readonly HttpClient _httpClient;
         private readonly Uri _baseUri;
         private List<FindAppointmentTaskData> _finalResult;
         private readonly CultureInfo culture = new CultureInfo("ru-RU");
-        private readonly IConfiguration _configuration;
 
         public FindAppointmentScheduleTask(ILogger<FindAppointmentScheduleTask> logger, ServiceContext serviceContext, HttpClient httpClient, IConfiguration configuration)
         {
-            _logger = logger;
-            _configuration = configuration;
+            Logger = logger;
+            Configuration = configuration;
             _serviceContext = serviceContext;
             _httpClient = httpClient;
-            _baseUri = new(this.GetTaskData(_configuration, "URL"));
+            _baseUri = new(GetTaskData("URL"));
             _finalResult = new List<FindAppointmentTaskData>();
         }
 
-        public async Task Execute(IJobExecutionContext context)
+        public override async Task Execute(IJobExecutionContext context)
         {
             try
             {
-                _logger.LogDebug("Started!");
+                if (!IsEnabled(context)) return;
+                Logger.LogDebug("Started!");
                 _serviceContext.FindAppointmentTaskLog.ToArray();
                 var dates = await GetAppointableDates();
                 await GetAppointableDoctors(dates);
@@ -42,7 +40,7 @@ namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.ToString());
+                Logger.LogCritical(ex.ToString());
             }
         }
 
@@ -57,7 +55,7 @@ namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
             var result = await _httpClient.SendAsync(request);
             if (!result.IsSuccessStatusCode)
             {
-                _logger.LogError("GetAppointableDates ERROR: " + request.RequestUri + result.StatusCode + result.ReasonPhrase);
+                Logger.LogError("GetAppointableDates ERROR: " + request.RequestUri + result.StatusCode + result.ReasonPhrase);
             }
             var content = await result.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<DateTime>>(content);
@@ -76,7 +74,7 @@ namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
                 var result = await _httpClient.SendAsync(request);
                 if (!result.IsSuccessStatusCode)
                 {
-                    _logger.LogError("GetAppointableDoctors ERROR: " + request.RequestUri + result.StatusCode + result.ReasonPhrase);
+                    Logger.LogError("GetAppointableDoctors ERROR: " + request.RequestUri + result.StatusCode + result.ReasonPhrase);
                 }
                 var content = await result.Content.ReadAsStringAsync();
                 var list = JsonConvert.DeserializeObject<List<AppointableDoctor>>(content);
@@ -132,7 +130,7 @@ namespace Ptiw.HostApp.Tasks.CheckNpcpnSchedule
             var result = await _httpClient.SendAsync(request);
             if (!result.IsSuccessStatusCode)
             {
-                _logger.LogError("GetAppointableSeances ERROR: " + request.RequestUri + result.StatusCode + result.ReasonPhrase);
+                Logger.LogError("GetAppointableSeances ERROR: " + request.RequestUri + result.StatusCode + result.ReasonPhrase);
             }
             var content = await result.Content.ReadAsStringAsync();
             var seances = JsonConvert.DeserializeObject<List<AppointableSeance>>(content);
