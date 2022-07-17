@@ -2,7 +2,7 @@
 {
     public abstract class AbstractJobWithConfigForUser<TConfig> : AbstractJob
     {
-        public AbstractJobWithConfigForUser(ILogger logger, IConfiguration configuration, IObserver<JobCompletionData> jobMonitor)
+        public AbstractJobWithConfigForUser(ILogger<IExpendedJob> logger, IConfiguration configuration, IObserver<JobCompletionData> jobMonitor)
             : base(logger, configuration, jobMonitor)
         {
         }

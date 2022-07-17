@@ -4,7 +4,7 @@ namespace Ptiw.Jobs.QuartzJobs
 {
     public abstract class AbstractJob : IExpendedJob, IObservable<JobCompletionData>
     {
-        public AbstractJob(ILogger logger, IConfiguration configuration, IObserver<JobCompletionData> jobMonitor)
+        public AbstractJob(ILogger<IExpendedJob> logger, IConfiguration configuration, IObserver<JobCompletionData> jobMonitor)
         {
             Logger = logger;
             Configuration = configuration;
@@ -12,7 +12,7 @@ namespace Ptiw.Jobs.QuartzJobs
         }
 
         private readonly IDisposable MonitorSubscription;
-        public ILogger Logger { get; set; }
+        public ILogger<IExpendedJob> Logger { get; set; }
         public IConfiguration Configuration { get; set; }
         public bool ChangesWereMade { get; set; } = false;
         private List<IObserver<JobCompletionData>> observers = new();
@@ -90,8 +90,9 @@ namespace Ptiw.Jobs.QuartzJobs
         protected string GetTaskData(string settingName, string group = null)
         {
             var nameArray = GetType().FullName.Split(".");
-            var jobName = nameArray[nameArray.Length - 2];
-            var settingPath = group == null ? $"{SettingNames.Jobs}:{jobName}:{settingName}" : $"{SettingNames.Jobs}:{jobName}:{group}:{settingName}";
+            var jobName = nameArray[^2];
+            var settingPath = group == null ?
+                $"{SettingNames.Jobs}:{jobName}:{settingName}" : $"{SettingNames.Jobs}:{jobName}:{group}:{settingName}";
             return Configuration[settingPath];
         }
     }

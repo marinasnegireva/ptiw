@@ -46,14 +46,14 @@ namespace Ptiw.Host
                 //Telegram bot worker
                 //services.AddHostedService<BotWorker>();
 
-                // services.AddScoped<IObserver<JobCompletionData>,JobMonitor>();
-                services.AddScoped<IObserver<JobCompletionData>, ReactionManager>();
+                services.AddTransient<IObserver<JobCompletionData>, ReactionManager>();
+
                 //Validators
-                services.AddScoped<IValidator<Jobs.Clinic.FindAppointmentsForUser.Job>, Jobs.Clinic.FindAppointmentsForUser.Validator>();
+                services.AddTransient<IValidator<Jobs.Clinic.FindAppointmentsForUser.Job>, Jobs.Clinic.FindAppointmentsForUser.Validator>();
 
-                services.AddScoped<IValidator<Jobs.Clinic.GetAppointments.Job>, Jobs.Clinic.GetAppointments.Validator>();
+                services.AddTransient<IValidator<Jobs.Clinic.GetAppointments.Job>, Jobs.Clinic.GetAppointments.Validator>();
 
-                services.AddScoped<IValidator<Jobs.Notifier.Job>, Jobs.Notifier.Validator>();
+                services.AddTransient<IValidator<Jobs.Notifier.Job>, Jobs.Notifier.Validator>();
             })
             .ConfigureLogging((context, collection) =>
             {

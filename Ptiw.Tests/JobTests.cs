@@ -1,3 +1,6 @@
+using Newtonsoft.Json;
+using Ptiw.Libs.Common.Contracts;
+
 namespace Ptiw.Tests
 {
     public class JobTests
@@ -37,15 +40,24 @@ namespace Ptiw.Tests
             task.Execute(new Mock<IJobExecutionContext>().Object).Wait();
         }
 
-        //[Fact]
-        //public void SearchAppointmentsForUserJobCreationTest()
-        //{
-        //   // var config = new ConfigurationBuilder().AddEnvironmentVariables().Build();
-        //    var logger = new Mock<ILogger<SearchAppointmentsForUserJob>>();
-        //    var context = new Mock<ServiceContext>(new DbContextOptions<ServiceContext>(), config);
+        [Fact]
+        public void SearchAppointmentsForUserJobCreationTest()
+        {
+            var context = TestHelper.MockServiceContext;
+            context
+                .Setup(c => c.GetAppointmentsUserWasntNotifiedAbout(0, typeof(Host.Jobs.Clinic.FindAppointmentsForUser.Job)))
+                .Returns(new List<Libs.EF.Tables.NpcpnAppointment>
+                {
+                    new Libs.EF.Tables.NpcpnAppointment { Active = true, Appointment = DateTime.Now.AddDays(1) }
+                });
 
-        //    var task = new SearchAppointmentsForUserJob(logger.Object, context.Object, config, jobMonitor.Object, new SearchAppointmentsForUserJobConfigValidator()) ;
-        //    task.Execute(new Mock<IJobExecutionContext>().Object).Wait();
-        //}
+            var userConfig = new FindAppointmentsConfig { UserId = 123 };
+            var jobContext = new Mock<IJobExecutionContext>();
+            jobContext.Setup(jk => jk.JobDetail.JobDataMap.Get(It.IsAny<string>())).Returns(JsonConvert.SerializeObject(userConfig));
+
+            var task = new Host.Jobs.Clinic.FindAppointmentsForUser.Job(TestHelper.Logger, context.Object, config,
+                jobMonitor.Object, new Host.Jobs.Clinic.FindAppointmentsForUser.Validator());
+            task.Execute(jobContext.Object).Wait();
+        }
     }
 }

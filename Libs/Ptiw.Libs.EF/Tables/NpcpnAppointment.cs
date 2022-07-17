@@ -20,26 +20,13 @@ namespace Ptiw.Libs.EF.Tables
         public string DoctorId { get; set; }
 
         [Required]
-        [MaxLength(126)]
-        public string AppointmentTime { get; set; }
-
-        [Required]
-        [MaxLength(126)]
-        public string AppointmentDate { get; set; }
-
-        [Required]
-        [MaxLength(24)]
-        public string AppointmentDayOfWeek { get; set; }
+        public DateTime Appointment { get; set; }
 
         public bool Active { get; set; } = true;
         public DateTime Added { get; set; }
 
         [NotMapped]
-        public int? AppointmentTimeHour
-        { get { return Convert.ToInt32(AppointmentTime.Split(".")[0]); } }
-
-        [NotMapped]
-        public SearchAppointmentsForUserConfig? TaskConfigForFiltering { get; set; }
+        public FindAppointmentsConfig? TaskConfigForFiltering { get; set; }
 
         public void Disable()
         {
@@ -56,14 +43,12 @@ namespace Ptiw.Libs.EF.Tables
             return other is not null &&
                    DoctorName.Trim() == other.DoctorName.Trim() &&
                    DoctorId.Trim() == other.DoctorId.Trim() &&
-                   AppointmentTime.Trim() == other.AppointmentTime.Trim() &&
-                   AppointmentDate.Trim() == other.AppointmentDate.Trim() &&
-                   AppointmentDayOfWeek.Trim() == other.AppointmentDayOfWeek.Trim();
+                   Appointment == other.Appointment;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(DoctorName, DoctorId, AppointmentTime, AppointmentDate, AppointmentDayOfWeek);
+            return HashCode.Combine(DoctorName, DoctorId, Appointment);
         }
 
         public static bool operator ==(NpcpnAppointment left, NpcpnAppointment right)

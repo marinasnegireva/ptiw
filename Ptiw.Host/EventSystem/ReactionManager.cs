@@ -4,7 +4,7 @@ namespace Ptiw.Host.EventSystem
 {
     public partial class ReactionManager : IObserver<JobCompletionData>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ReactionManager> _logger;
         private readonly IScheduler _scheduler;
         private readonly ServiceContext _serviceContext;
         public List<Reaction> OnCompletedReactions;
@@ -12,7 +12,7 @@ namespace Ptiw.Host.EventSystem
         public ConcurrentBag<Exception> Errors;
         private bool Reacted => OnCompletedReactions != null && OnNextReactions != null;
 
-        public ReactionManager(ILogger logger, ISchedulerFactory schedulerFactory, ServiceContext context)
+        public ReactionManager(ILogger<ReactionManager> logger, ISchedulerFactory schedulerFactory, ServiceContext context)
         {
             _logger = logger;
             _serviceContext = context;
@@ -88,19 +88,6 @@ namespace Ptiw.Host.EventSystem
                 return result;
             }
         }
-
-        //private async void GetAppointmentsReaction()
-        //{
-        //    try
-        //    {
-        //        _logger.LogDebug($"{nameof(GetAppointmentsReaction)} called)");
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        Errors.Add(ex);
-        //    }
-
-        //}
 
         private async void SomeDefaultStuff()
         {

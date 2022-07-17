@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Text;
 
 namespace Ptiw.Libs.Telegram.Logging;
 

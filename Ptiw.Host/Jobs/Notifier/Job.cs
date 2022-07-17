@@ -11,7 +11,7 @@ namespace Ptiw.Host.Jobs.Notifier
         private readonly ServiceContext _serviceContext;
         private readonly TelegramBotClient _telegramBotClient;
 
-        public Job(ILogger logger, ServiceContext serviceContext, IConfiguration configuration, IObserver<JobCompletionData> jobMonitor,
+        public Job(ILogger<IExpendedJob> logger, ServiceContext serviceContext, IConfiguration configuration, IObserver<JobCompletionData> jobMonitor,
             IValidator<Job> validator)
             : base(logger, configuration, jobMonitor)
         {
@@ -30,7 +30,7 @@ namespace Ptiw.Host.Jobs.Notifier
                     return;
                 }
 
-                var needToNoticeAbout = _serviceContext.Notifications.Where(t => !t.Completed).ToList() ?? new List<Notification>();
+                var needToNoticeAbout = _serviceContext.GetNotificationsToSend() ?? new List<Notification>();
                 if (!needToNoticeAbout.IsNullOrEmpty())
                 {
                     await SendEveryNotificationAsync(needToNoticeAbout);

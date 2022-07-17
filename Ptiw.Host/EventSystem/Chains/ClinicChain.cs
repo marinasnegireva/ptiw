@@ -31,7 +31,7 @@
                 _serviceContext.TaskConfigs
                 .Where(tk =>
                 tk.Enabled &&
-                tk.JobName == typeof(Jobs.Clinic.GetAppointments.Job).FullName).ToList();
+                tk.JobTypeFullName == typeof(Jobs.Clinic.GetAppointments.Job).FullName).ToList();
 
             foreach (var config in userConfigs)
             {

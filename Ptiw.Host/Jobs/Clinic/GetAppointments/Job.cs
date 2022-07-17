@@ -14,7 +14,7 @@ namespace Ptiw.Host.Jobs.Clinic.GetAppointments
 
         public Uri? ClinicUri => new(GetTaskData(SettingNames.URL));
 
-        public Job(ILogger logger, ServiceContext serviceContext, HttpClient httpClient,
+        public Job(ILogger<IExpendedJob> logger, ServiceContext serviceContext, HttpClient httpClient,
             IConfiguration configuration, IObserver<JobCompletionData> jobMonitor, IValidator<Job> validator)
             : base(logger, configuration, jobMonitor)
         {
@@ -120,8 +120,9 @@ namespace Ptiw.Host.Jobs.Clinic.GetAppointments
                 {
                     _finalResult.Add(new NpcpnAppointment
                     {
-                        AppointmentDate = date.ToString("dd.MM"),
-                        AppointmentDayOfWeek = RuCulture.DateTimeFormat.GetDayName(date.DayOfWeek),
+                        //AppointmentDate = date.ToString("dd.MM"),
+                        Appointment = date,
+                        //AppointmentDayOfWeek = RuCulture.DateTimeFormat.GetDayName(date.DayOfWeek),
                         DoctorId = appointableDoctor.Id,
                         DoctorName = appointableDoctor.GetFullName(),
                     });
@@ -144,9 +145,10 @@ namespace Ptiw.Host.Jobs.Clinic.GetAppointments
                 {
                     DoctorId = tuple.Item1.DoctorId,
                     DoctorName = tuple.Item1.DoctorName,
-                    AppointmentTime = a.Time.ToString("HH.mm"),
-                    AppointmentDate = tuple.Item1.AppointmentDate,
-                    AppointmentDayOfWeek = tuple.Item1.AppointmentDayOfWeek,
+                    Appointment = tuple.Item1.Appointment.Add(a.Time),
+                    //AppointmentTime = a.Time.ToString("HH.mm"),
+                    //AppointmentDate = tuple.Item1.AppointmentDate,
+                    //AppointmentDayOfWeek = tuple.Item1.AppointmentDayOfWeek,
                     Added = DateTime.UtcNow
                 }).ToList();
                 _finalResult.AddRange(listToAdd);
@@ -155,8 +157,8 @@ namespace Ptiw.Host.Jobs.Clinic.GetAppointments
 
         private async Task<List<AppointableSeance>> GetSeancesAsync(NpcpnAppointment data)
         {
-            var split = data.AppointmentDate.Split(".");
-            var stringDate = $"{DateTime.Now.Year}/{split[1]}/{split[0]}";
+            // var split = data.Appointment.Split(".");
+            var stringDate = $"{DateTime.Now.Year}/{data.Appointment.Month}/{data.Appointment.Day}";
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,

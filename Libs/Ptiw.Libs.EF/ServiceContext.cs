@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Newtonsoft.Json;
+using Ptiw.Libs.Common.Contracts;
 using Ptiw.Libs.EF.Tables;
 
 namespace Ptiw.Libs.EF
@@ -15,36 +17,60 @@ namespace Ptiw.Libs.EF
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(_configuration[Constants.SettingNames.ServiceContext], b => b.MigrationsAssembly("Ptiw.Host"));
+            if (TaskConfigs.Count() == 0)
+            {
+                TaskConfigs.Add(new TaskConfig
+                {
+                    Added = DateTime.Now,
+                    Enabled = true,
+                    JobTypeFullName = "Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser.Job",
+                    BelongsToUser = long.Parse(_configuration[Constants.SettingNames.AdminUserId]),
+                    Config = JsonConvert.SerializeObject(new FindAppointmentsConfig
+                    {
+                        UserId = long.Parse(_configuration[Constants.SettingNames.AdminUserId])
+                    })
+                });
+                SaveChanges();
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //Configure default schema
             modelBuilder.HasDefaultSchema("public");
         }
 
-        public DbSet<NpcpnAppointment> NpcpnAppointments { get; set; }
-        public DbSet<UserNotificationsAggregateLogEntry> UserNotificationsAggregateLog { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
-        public DbSet<TaskConfig> TaskConfigs { get; set; }
-        public DbSet<User> Users { get; set; }
+        public virtual DbSet<NpcpnAppointment> NpcpnAppointments { get; set; }
+        public virtual DbSet<UserNotificationsAggregateLogEntry> UserNotificationsAggregateLog { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
+        public virtual DbSet<TaskConfig> TaskConfigs { get; set; }
+        public virtual DbSet<User> Users { get; set; }
 
-        public bool AlreadyExists(NpcpnAppointment data)
+        public virtual bool AlreadyExists(NpcpnAppointment data)
         {
             return NpcpnAppointments.Any(n => n == data);
         }
 
-        public List<NpcpnAppointment> GetAppoitmentsUserWasntNotifiedAbout(long userId, string JobName)
+        public virtual List<NpcpnAppointment> GetAppointmentsUserWasntNotifiedAbout(long userId, Type jobtype)
         {
             return (List<NpcpnAppointment>)(from na in NpcpnAppointments
                                             join notification in UserNotificationsAggregateLog on na.Id equals notification.FkId
-                                            where notification.UserId != userId && notification.JobName == JobName
+                                            where notification.UserId != userId && notification.JobTypeFullName == jobtype.FullName && na.Active
                                             select na);
         }
 
-        public async Task AddDataToNotificationLog(List<int> ids, long userId, string JobName, bool saveContext = true)
+        public virtual List<Notification> GetNotificationsToSend()
         {
-            var newNotificationLogData = ids.Select(id => new UserNotificationsAggregateLogEntry { FkId = id, UserId = userId, JobName = JobName });
+            return Notifications.Where(t => !t.Completed).ToList();
+        }
+
+        public virtual async Task AddDataToNotificationLog(List<int> ids, long userId, Type jobType, bool saveContext = true)
+        {
+            var newNotificationLogData = ids.Select(id => new UserNotificationsAggregateLogEntry
+            {
+                FkId = id,
+                UserId = userId,
+                JobTypeFullName = jobType.FullName
+            });
             await UserNotificationsAggregateLog.AddRangeAsync(newNotificationLogData);
             if (saveContext)
             {

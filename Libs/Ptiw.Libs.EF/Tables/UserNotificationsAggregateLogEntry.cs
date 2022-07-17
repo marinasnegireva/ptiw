@@ -16,7 +16,7 @@
         public int FkId { get; set; }
 
         [Required]
-        [MaxLength(126)]
-        public string JobName { get; set; }
+        [MaxLength(200)]
+        public string JobTypeFullName { get; set; }
     }
 }

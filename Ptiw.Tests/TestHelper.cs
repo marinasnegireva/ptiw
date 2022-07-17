@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq.Protected;
+using Newtonsoft.Json;
+using Ptiw.Jobs.QuartzJobs;
 using Ptiw.Libs.Common;
 using Ptiw.Libs.Validation.Validators;
 using System.Net;
@@ -56,7 +58,8 @@ namespace Ptiw.Tests
             }
         }
 
-        internal static ILogger Logger => NullLogger.Instance;
+        internal static ILogger<IExpendedJob> Logger => (ILogger<IExpendedJob>)NullLogger.Instance;
+        internal static ILogger<ReactionManager> ReactionLogger = (ILogger<ReactionManager>)NullLogger.Instance;
         internal static IConfiguration Configuration => new ConfigurationBuilder().AddEnvironmentVariables().Build();
 
         internal static Mock<ISchedulerFactory> MockSchedulerFactory
@@ -70,8 +73,15 @@ namespace Ptiw.Tests
             }
         }
 
-        internal static Mock<ServiceContext> MockServiceContext =>
-            new Mock<ServiceContext>(new DbContextOptions<ServiceContext>(), Configuration);
+        internal static Mock<ServiceContext> MockServiceContext
+        {
+            get
+            {
+                var result = new Mock<ServiceContext>(new DbContextOptions<ServiceContext>(), Configuration);
+                // result.Setup(r => r.NpcpnAppointments).Returns(new Mock<DbSet<NpcpnAppointment>>().Object);
+                return result;
+            }
+        }
 
         internal static async Task WaitUntil(Func<bool> predicate, int sleep = 50)
         {
@@ -84,7 +94,7 @@ namespace Ptiw.Tests
         internal static void AssertEvents(this ReactionManager reactionManager, Type job)
         {
             Assert.NotNull(reactionManager.Errors);
-            Assert.Empty(reactionManager.Errors);
+            Assert.True(reactionManager.Errors.IsEmpty, JsonConvert.SerializeObject(reactionManager.Errors));
             Assert.NotNull(reactionManager.OnCompletedReactions);
             Assert.NotEmpty(reactionManager.OnCompletedReactions);
             Assert.NotNull(reactionManager.OnNextReactions);
@@ -92,6 +102,32 @@ namespace Ptiw.Tests
             Assert.Contains(reactionManager.OnCompletedReactions, r => r.JobReactTo == null);
             Assert.Contains(reactionManager.OnNextReactions, r => r.JobReactTo == job);
             Assert.True(reactionManager.OnNextReactions.All(r => r.Task.IsCompletedSuccessfully));
+            Assert.True(reactionManager.OnCompletedReactions.All(r => r.Task.IsCompletedSuccessfully));
+        }
+
+        internal static void AssertEventsNoChanges(this ReactionManager reactionManager, Type job)
+        {
+            Assert.NotNull(reactionManager.Errors);
+            Assert.Empty(reactionManager.Errors);
+            Assert.NotNull(reactionManager.OnCompletedReactions);
+            Assert.NotEmpty(reactionManager.OnCompletedReactions);
+            Assert.NotNull(reactionManager.OnNextReactions);
+            Assert.Empty(reactionManager.OnNextReactions);
+            Assert.Contains(reactionManager.OnCompletedReactions, r => r.JobReactTo == null);
+            Assert.DoesNotContain(reactionManager.OnNextReactions, r => r.JobReactTo == job);
+            Assert.True(reactionManager.OnCompletedReactions.All(r => r.Task.IsCompletedSuccessfully));
+        }
+
+        internal static void AssertEventsOnErrorWith0OnNext(this ReactionManager reactionManager, Type job)
+        {
+            Assert.NotNull(reactionManager.Errors);
+            Assert.NotEmpty(reactionManager.Errors);
+            Assert.NotNull(reactionManager.OnCompletedReactions);
+            Assert.NotEmpty(reactionManager.OnCompletedReactions);
+            Assert.NotNull(reactionManager.OnNextReactions);
+            Assert.Empty(reactionManager.OnNextReactions);
+            Assert.Contains(reactionManager.OnCompletedReactions, r => r.JobReactTo == null);
+            Assert.DoesNotContain(reactionManager.OnNextReactions, r => r.JobReactTo == job);
             Assert.True(reactionManager.OnCompletedReactions.All(r => r.Task.IsCompletedSuccessfully));
         }
     }

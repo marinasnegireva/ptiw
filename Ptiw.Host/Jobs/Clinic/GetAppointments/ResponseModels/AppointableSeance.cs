@@ -6,6 +6,6 @@
         public string Id { get; set; }
 
         [JsonProperty("time")]
-        public DateTimeOffset Time { get; set; }
+        public TimeSpan Time { get; set; }
     }
 }

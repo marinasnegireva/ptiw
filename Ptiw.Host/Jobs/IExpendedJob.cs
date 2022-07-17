@@ -2,7 +2,7 @@
 {
     public interface IExpendedJob : IJob
     {
-        ILogger Logger { get; set; }
+        ILogger<IExpendedJob> Logger { get; set; }
         IConfiguration Configuration { get; set; }
     }
 }

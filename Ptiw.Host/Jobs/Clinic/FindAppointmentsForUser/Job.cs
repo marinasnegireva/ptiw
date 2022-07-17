@@ -1,6 +1,5 @@
 ﻿using Ptiw.Jobs.QuartzJobs;
 using Ptiw.Libs.EF.Tables;
-using Ptiw.Libs.Validation.Validators;
 using System.Text;
 
 namespace Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser
@@ -8,18 +7,19 @@ namespace Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser
     /// <summary>
     /// Finds appointments for specific user configs and created notification data
     /// </summary>
-    public class Job : AbstractJobWithConfigForUser<SearchAppointmentsForUserConfig>
+    public class Job : AbstractJobWithConfigForUser<FindAppointmentsConfig>
     {
         private readonly ServiceContext _serviceContext;
         private List<NpcpnAppointment> _finalResult;
+        private readonly IValidator<Job> _validator;
 
-        public Job(ILogger logger, ServiceContext serviceContext, IConfiguration configuration,
+        public Job(ILogger<IExpendedJob> logger, ServiceContext serviceContext, IConfiguration configuration,
             IObserver<JobCompletionData> jobMonitor, IValidator<Job> validator)
             : base(logger, configuration, jobMonitor)
         {
-            validator.ValidateAndThrow(this);
             _serviceContext = serviceContext;
             _finalResult = new List<NpcpnAppointment>();
+            _validator = validator;
         }
 
         public override async Task Execute(IJobExecutionContext context)
@@ -29,8 +29,9 @@ namespace Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser
                 Logger.LogDebug("Started!");
 
                 SetTaskConfiguration(context);
+                _validator.ValidateAndThrow(this);
 
-                var appointmentsToProcess = _serviceContext.GetAppoitmentsUserWasntNotifiedAbout(TaskConfiguration.UserId, nameof(Job));
+                _finalResult = _serviceContext.GetAppointmentsUserWasntNotifiedAbout(TaskConfiguration.UserId, GetType());
                 FilterAppointments();
                 await SaveResults();
                 Exit();
@@ -47,7 +48,7 @@ namespace Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser
             {
                 Logger.LogDebug($"Saving notification for {_finalResult.Count} appointments for User {TaskConfiguration.UserId}.");
                 await _serviceContext.Notifications.AddAsync(new Notification { Added = DateTime.UtcNow, UserIdTo = TaskConfiguration.UserId, NotificationText = CreateMessage() });
-                await _serviceContext.AddDataToNotificationLog(_finalResult.Select(fr => fr.Id).ToList(), TaskConfiguration.UserId, nameof(Job), false);
+                await _serviceContext.AddDataToNotificationLog(_finalResult.Select(fr => fr.Id).ToList(), TaskConfiguration.UserId, GetType(), false);
                 await _serviceContext.SaveChangesAsync();
                 Logger.LogInformation("Saved.");
                 ChangesWereMade = true;
@@ -79,7 +80,9 @@ namespace Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser
             sb.AppendLine();
             foreach (var notification in _finalResult)
             {
-                sb.AppendLine($"Дата: {notification.AppointmentDate} {notification.AppointmentDayOfWeek} Время: {notification.AppointmentTime} Врач: {notification.DoctorName}");
+                sb.AppendLine($"Дата: {notification.Appointment.Month}.{notification.Appointment.Day} " +
+                    $"{Constants.RuCulture.DateTimeFormat.GetDayName(notification.Appointment.DayOfWeek)} " +
+                    $"Время: {notification.Appointment.Hour}:{notification.Appointment.Minute} Врач: {notification.DoctorName}");
             }
             return sb.ToString();
         }
