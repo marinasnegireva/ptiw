@@ -18,6 +18,7 @@ namespace Ptiw.Tests
         {
             TestHelper.SetEnv();
             TestHelper.ValidateEnv();
+            Host.Jobs.Clinic.FindAppointmentsForUser.Starter.StartedOnce = true;
             contextAppointmentsDbSet = new List<NpcpnAppointment>
                 {
                     //пятница

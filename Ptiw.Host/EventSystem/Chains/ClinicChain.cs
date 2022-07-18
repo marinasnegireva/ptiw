@@ -14,6 +14,12 @@
                     NeedChangesToHappenToFire = true,
                     Action = ClinicChain_Link_1_Action
                     },
+                      new Reaction
+                    {
+                    JobReactTo = typeof(Jobs.Clinic.GetAppointments.Job),
+                    NeedChangesToHappenToFire = false,
+                    Action = ClinicChain_Link_1_Action_OnHostStart
+                    },
                     new Reaction
                     {
                     JobReactTo = typeof(Jobs.Clinic.FindAppointmentsForUser.Job),
@@ -41,6 +47,15 @@
                     .Build();
                 await _scheduler.AddJob(job, true);
                 await _scheduler.TriggerJob(job.Key);
+            }
+        }
+
+        private async void ClinicChain_Link_1_Action_OnHostStart()
+        {
+            if (!Jobs.Clinic.FindAppointmentsForUser.Starter.StartedOnce)
+            {
+                ClinicChain_Link_1_Action();
+                Jobs.Clinic.FindAppointmentsForUser.Starter.StartedOnce = true;
             }
         }
 
