@@ -58,8 +58,8 @@ namespace Ptiw.Tests
             }
         }
 
-        internal static ILogger<IExpendedJob> Logger => (ILogger<IExpendedJob>)NullLogger.Instance;
-        internal static ILogger<ReactionManager> ReactionLogger = (ILogger<ReactionManager>)NullLogger.Instance;
+        internal static ILogger<IExpendedJob> Logger => new Mock<ILogger<IExpendedJob>>().Object;
+        internal static ILogger<ReactionManager> ReactionLogger = new Mock<ILogger<ReactionManager>>().Object;
         internal static IConfiguration Configuration => new ConfigurationBuilder().AddEnvironmentVariables().Build();
 
         internal static Mock<ISchedulerFactory> MockSchedulerFactory

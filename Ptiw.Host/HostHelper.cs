@@ -11,7 +11,7 @@ namespace Ptiw.Host
             .ConfigureServices(services =>
             {
                 services.AddDbContext<ServiceContext>();
-                services.AddHttpClient();
+                services.AddTransient<HttpClient>();
                 services.AddQuartz(q =>
                 {
                     q.UseMicrosoftDependencyInjectionJobFactory();
