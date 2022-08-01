@@ -17,11 +17,15 @@ namespace Ptiw.Libs.EF
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql(_configuration[Constants.SettingNames.ServiceContext], b => b.MigrationsAssembly("Ptiw.Host"));
+        }
+
+        public void AddDefaultTaskConfig()
+        {
             if (TaskConfigs.Count() == 0)
             {
                 TaskConfigs.Add(new TaskConfig
                 {
-                    Added = DateTime.Now,
+                    Added = DateTime.UtcNow,
                     Enabled = true,
                     JobTypeFullName = "Ptiw.Host.Jobs.Clinic.FindAppointmentsForUser.Job",
                     BelongsToUser = long.Parse(_configuration[Constants.SettingNames.AdminUserId]),
@@ -38,6 +42,7 @@ namespace Ptiw.Libs.EF
         {
             modelBuilder.HasDefaultSchema("public");
         }
+
 
         public virtual DbSet<NpcpnAppointment> NpcpnAppointments { get; set; }
         public virtual DbSet<UserNotificationsAggregateLogEntry> UserNotificationsAggregateLog { get; set; }

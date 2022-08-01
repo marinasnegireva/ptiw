@@ -120,9 +120,7 @@ namespace Ptiw.Host.Jobs.Clinic.GetAppointments
                 {
                     _finalResult.Add(new NpcpnAppointment
                     {
-                        //AppointmentDate = date.ToString("dd.MM"),
                         Appointment = date,
-                        //AppointmentDayOfWeek = RuCulture.DateTimeFormat.GetDayName(date.DayOfWeek),
                         DoctorId = appointableDoctor.Id,
                         DoctorName = appointableDoctor.GetFullName(),
                     });

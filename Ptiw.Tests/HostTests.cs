@@ -28,5 +28,7 @@ namespace Ptiw.Tests
             var configValidator = new HostIConfigurationValidator();
             configValidator.ValidateAndThrow(config);
         }
+
+       
     }
 }

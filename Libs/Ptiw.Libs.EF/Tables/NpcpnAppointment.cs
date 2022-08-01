@@ -7,6 +7,8 @@ namespace Ptiw.Libs.EF.Tables
     /// </summary>
     public class NpcpnAppointment : IEquatable<NpcpnAppointment>
     {
+        private DateTime appointment;
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -20,7 +22,7 @@ namespace Ptiw.Libs.EF.Tables
         public string DoctorId { get; set; }
 
         [Required]
-        public DateTime Appointment { get; set; }
+        public DateTime Appointment { get => appointment.ToLocalTime(); set => appointment = value.ToUniversalTime(); }
 
         public bool Active { get; set; } = true;
         public DateTime Added { get; set; }

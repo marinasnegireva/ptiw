@@ -82,5 +82,12 @@ namespace Ptiw.Host
             var configValidator = new Libs.Validation.Validators.HostIConfigurationValidator();
             configValidator.ValidateAndThrow(config);
         }
+
+        //public static void ServiceContextStartup(IHost host)
+        //{
+        //    using var scope = host.Services.CreateScope();
+        //    using var context = scope.ServiceProvider.GetRequiredService <ServiceContext>();
+        //    context.AddDefaultTaskConfig();
+        //}
     }
 }
