@@ -38,7 +38,11 @@ namespace Ptiw.Jobs.QuartzJobs
             foreach (var observer in observers)
             {
                 observer.OnNext(new JobCompletionData { ChangesWereMade = ChangesWereMade, Job = GetType() });
-            }
+                if(observer is ReactionManager reactionManager)
+                {
+                    reactionManager.WaitReactionsToComplete().Wait();
+                }
+            }            
             MonitorSubscription.Dispose();
         }
 

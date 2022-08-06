@@ -83,11 +83,11 @@ namespace Ptiw.Host
             configValidator.ValidateAndThrow(config);
         }
 
-        //public static void ServiceContextStartup(IHost host)
-        //{
-        //    using var scope = host.Services.CreateScope();
-        //    using var context = scope.ServiceProvider.GetRequiredService <ServiceContext>();
-        //    context.AddDefaultTaskConfig();
-        //}
+        public static void ServiceContextStartup(IHost host)
+        {
+            using var scope = host.Services.CreateScope();
+            using var context = scope.ServiceProvider.GetRequiredService<ServiceContext>();
+            //context.AddDefaultTaskConfig();
+        }
     }
 }
